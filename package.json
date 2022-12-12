@@ -1,6 +1,6 @@
 {
   "name": "artifacts-url-comments",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "description": "Add comments with artifacts urls to pull request or associated issues",
   "main": "lib/main.js",
   "scripts": {
@@ -45,6 +45,6 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@ptabor/github-actions": "^1.4.7"
+    "@ptabor/github-actions": "^1.4.8"
   }
 }
