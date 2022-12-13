@@ -30,7 +30,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const github_actions_1 = __nccwpck_require__(3333);
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-core.info('Starting v1.4.9');
+core.info('Starting v1.4.10');
 core.info(JSON.stringify(github.context));
 core.info('Really Starting...');
 github_actions_1.workflowArtifactsPullRequestCommentAction();
@@ -6933,6 +6933,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getWorkflowArtifactDetails = void 0;
 const useOctokit_1 = __nccwpck_require__(6044);
 const github = __importStar(__nccwpck_require__(5438));
+const core = __importStar(__nccwpck_require__(2186));
 /*
   gets all artifacts for workflow run or from input ( for when using workflow_run_conclusion_dispatch)
   returning the id, name and most importantly the html url to the artifact
@@ -6945,6 +6946,8 @@ function getWorkflowArtifactDetails() {
             if (workflow.data.check_suite_id) {
                 const artifacts = yield octokit.paginate(octokit.rest.actions.listWorkflowRunArtifacts, { 'owner': github.context.repo.owner, 'repo': github.context.repo.repo, 'run_id': github.context.runId });
                 const repoUrl = github.context.apiUrl + "/repos/" + github.context.repo.owner + "/" + github.context.repo.repo;
+                core.info("Artifacts:" + JSON.stringify(artifacts));
+                core.info("Repo Url:" + repoUrl);
                 for (const artifact of artifacts) {
                     const artifactDetail = {
                         id: artifact.id,
@@ -6955,6 +6958,7 @@ function getWorkflowArtifactDetails() {
                 }
                 ;
             }
+            core.info("Artifact details:" + JSON.stringify(artifactDetails));
             return artifactDetails;
         }));
     });
