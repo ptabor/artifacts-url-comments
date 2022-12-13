@@ -30,8 +30,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const github_actions_1 = __nccwpck_require__(3333);
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-core.info('Starting');
-core.info(JSON.stringify(github.context.payload));
+core.info('Starting v1.4.9');
+core.info(JSON.stringify(github.context));
 core.info('Really Starting...');
 github_actions_1.workflowArtifactsPullRequestCommentAction();
 
@@ -6901,6 +6901,25 @@ exports.vsTestSolutionAction = vsTestSolutionAction;
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -6912,8 +6931,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getWorkflowArtifactDetails = void 0;
-const inputHelpers_1 = __nccwpck_require__(6619);
 const useOctokit_1 = __nccwpck_require__(6044);
+const github = __importStar(__nccwpck_require__(5438));
 /*
   gets all artifacts for workflow run or from input ( for when using workflow_run_conclusion_dispatch)
   returning the id, name and most importantly the html url to the artifact
@@ -6921,23 +6940,20 @@ const useOctokit_1 = __nccwpck_require__(6044);
 function getWorkflowArtifactDetails() {
     return __awaiter(this, void 0, void 0, function* () {
         return useOctokit_1.useOctokit((octokit) => __awaiter(this, void 0, void 0, function* () {
-            const artifactDetails = [];
-            const payload = inputHelpers_1.payloadOrInput('workflowPayload');
-            const workflowRun = payload.workflow_run;
-            const repoHtmlUrl = payload.repository.html_url;
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const checkSuiteNumber = workflowRun.check_suite_id;
-            const artifactsUrl = workflowRun.artifacts_url;
-            const artifacts = yield octokit.paginate(artifactsUrl, {
-                per_page: 100
-            });
-            for (const artifact of artifacts) {
-                const artifactDetail = {
-                    id: artifact.id,
-                    name: artifact.name,
-                    httpUrl: getArtifactUrl(repoHtmlUrl, checkSuiteNumber, artifact.id)
-                };
-                artifactDetails.push(artifactDetail);
+            const workflow = yield octokit.rest.actions.getWorkflowRun({ 'owner': github.context.repo.owner, 'repo': github.context.repo.repo, 'run_id': github.context.runId });
+            let artifactDetails = [];
+            if (workflow.data.check_suite_id) {
+                const artifacts = yield octokit.paginate(octokit.rest.actions.listWorkflowRunArtifacts, { 'owner': github.context.repo.owner, 'repo': github.context.repo.repo, 'run_id': github.context.runId });
+                const repoUrl = github.context.apiUrl + "/repos/" + github.context.repo.owner + "/" + github.context.repo.repo;
+                for (const artifact of artifacts) {
+                    const artifactDetail = {
+                        id: artifact.id,
+                        name: artifact.name,
+                        httpUrl: getArtifactUrl(repoUrl, workflow.data.check_suite_id ? workflow.data.check_suite_id : 0, artifact.id)
+                    };
+                    artifactDetails.push(artifactDetail);
+                }
+                ;
             }
             return artifactDetails;
         }));
